@@ -17,12 +17,9 @@ class MyApp extends StatelessWidget {
       ],
       child: BlocListener<AuthCubit, AuthState>(
         listenWhen: (previous, current) {
-          return (previous.runtimeType != current.runtimeType) &&
-              (current is AuthAuthenticated ||
-                  current is AuthUnauthenticated ||
-                  current is AuthLoading ||
-                  current is AuthError ||
-                  current is AuthInitial);
+          if (previous.runtimeType == current.runtimeType) return false;
+          
+          return _shouldRefreshRouter(previous, current);
         },
         listener: (context, state) {
           AppRouter.router.refresh();
@@ -49,5 +46,16 @@ class MyApp extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  bool _shouldRefreshRouter(AuthState previous, AuthState current) {
+    return (previous is AuthInitial && current is AuthLoading) ||
+           (previous is AuthLoading && current is AuthAuthenticated) ||
+           (previous is AuthLoading && current is AuthUnauthenticated) ||
+           (previous is AuthLoading && current is AuthError) ||
+           (previous is AuthAuthenticated && current is AuthUnauthenticated) ||
+           (previous is AuthUnauthenticated && current is AuthAuthenticated) ||
+           (previous is AuthError && current is AuthAuthenticated) ||
+           (previous is AuthError && current is AuthUnauthenticated);
   }
 }
