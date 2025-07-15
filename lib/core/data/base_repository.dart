@@ -3,16 +3,11 @@ import 'package:pos_delivery_mobile/core/data/base_response.dart';
 import 'package:pos_delivery_mobile/core/network/api_result.dart';
 import 'package:pos_delivery_mobile/core/network/network_info.dart';
 import 'package:pos_delivery_mobile/core/utils/exception_handler.dart';
-import 'package:pos_delivery_mobile/core/utils/auth_failure_handler.dart';
 
 abstract class BaseRepository {
-  BaseRepository({
-    required this.networkInfo,
-    required this.authFailureHandler,
-  });
+  BaseRepository({required this.networkInfo});
 
   final NetworkInfo networkInfo;
-  final AuthFailureHandler authFailureHandler;
 
   FailureType _getFailureTypeFromStatusCode(int statusCode) {
     switch (statusCode) {
@@ -46,10 +41,6 @@ abstract class BaseRepository {
         final failureType = _getFailureTypeFromStatusCode(statusCode);
         final message = data.message ?? 'Request failed with status code $statusCode';
         
-        if (failureType == FailureType.auth) {
-          authFailureHandler.handleAuthFailure(message, failureType);
-        }
-        
         return ApiResult.failure(message, failureType);
       }
     }
@@ -80,7 +71,7 @@ abstract class BaseRepository {
         try {
           await saveLocalData(validatedResult.data);
         } catch (e) {
-          // Continue if local save fails
+          //silently ignore save erors kina bhane we already got the data we need
         }
       }
 
@@ -115,7 +106,7 @@ abstract class BaseRepository {
           try {
             await saveLocalData(validatedResult.data);
           } catch (e) {
-            // Continue if local save fails
+            //silently ignore save erors kina bhane we already got the data we need
           }
         }
         return validatedResult;
@@ -154,7 +145,7 @@ abstract class BaseRepository {
           try {
             await saveLocalData(remoteResult.data);
           } catch (e) {
-            // Continue if local save fails
+            //silently ignore save erors kina bhane we already got the data we need
           }
         }
         return remoteResult;

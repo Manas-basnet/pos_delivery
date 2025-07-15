@@ -11,7 +11,6 @@ import 'package:pos_delivery_mobile/features/auth/domain/repositories/auth_repos
 class AuthRepositoryImpl extends BaseRepository implements AuthRepository {
   AuthRepositoryImpl({
     required super.networkInfo,
-    required super.authFailureHandler,
     required this.localDatasource,
     required this.remoteDatasource,
   });
@@ -33,6 +32,9 @@ class AuthRepositoryImpl extends BaseRepository implements AuthRepository {
             if (loginResponse.refreshToken != null) {
               await localDatasource.saveRefreshToken(loginResponse.refreshToken!);
             }
+            if (loginResponse.id != null) {
+              await localDatasource.saveUserData(loginResponse.id!, username);
+            }
           }
         },
       );
@@ -46,6 +48,8 @@ class AuthRepositoryImpl extends BaseRepository implements AuthRepository {
           final authUser = AuthUser(
             token: loginResponse.token!,
             refreshToken: loginResponse.refreshToken,
+            userId: loginResponse.id,
+            username: username,
           );
           
           return ApiResult.success(authUser);
@@ -63,14 +67,21 @@ class AuthRepositoryImpl extends BaseRepository implements AuthRepository {
           final response = await remoteDatasource.logout();
           return ApiResult.success(response);
         },
+        localCall: () async {
+          await localDatasource.clearAuthData();
+          return ApiResult.success(LogoutResponseModel());
+        },
         saveLocalData: (logoutResponse) async {
-          await localDatasource.clearTokens();
+          await localDatasource.clearAuthData();
         },
       );
 
       return result.fold(
         onSuccess: (_) => ApiResult.success(null),
-        onFailure: (message, type) => ApiResult.failure(message, type),
+        onFailure: (message, type) {
+          localDatasource.clearAuthData();
+          return ApiResult.success(null);
+        },
       );
     });
   }
@@ -78,14 +89,15 @@ class AuthRepositoryImpl extends BaseRepository implements AuthRepository {
   @override
   Future<ApiResult<String>> refreshToken() async {
     return ExceptionHandler.handleExceptions(() async {
-      final tokenResult = await localDatasource.getRefreshToken();
+      final refreshTokenResult = await localDatasource.getRefreshToken();
       
-      if (tokenResult == null) {
+      if (refreshTokenResult == null || refreshTokenResult.isEmpty) {
         return ApiResult.failure('No refresh token available', FailureType.auth);
       }
 
-      final newToken = await remoteDatasource.refreshToken(tokenResult);
+      final newToken = await remoteDatasource.refreshToken(refreshTokenResult);
       await localDatasource.saveToken(newToken);
+      
       return ApiResult.success(newToken);
     });
   }
@@ -107,14 +119,22 @@ class AuthRepositoryImpl extends BaseRepository implements AuthRepository {
         return ApiResult.success(false);
       }
 
-      final isValid = await remoteDatasource.validateToken(token);
-      
-      if (!isValid) {
-        await localDatasource.clearTokens();
-        return ApiResult.success(false);
+      if (!(await networkInfo.isConnected)) {
+        return ApiResult.success(true);
       }
 
-      return ApiResult.success(true);
+      try {
+        final isValid = await remoteDatasource.validateToken(token);
+        
+        if (!isValid) {
+          await localDatasource.clearAuthData();
+          return ApiResult.success(false);
+        }
+
+        return ApiResult.success(true);
+      } catch (e) {
+        return ApiResult.success(true);
+      }
     });
   }
 }

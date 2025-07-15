@@ -1,15 +1,16 @@
 import 'package:dio/dio.dart';
 import 'package:pos_delivery_mobile/config/app_config.dart';
+import 'package:pos_delivery_mobile/core/network/interceptors/auth_interceptor.dart';
 
 class DioClient {
   late final Dio _dio;
   
-  DioClient() {
+  DioClient({AuthInterceptor? authInterceptor}) {
     _dio = Dio();
-    _configureDio();
+    _configureDio(authInterceptor);
   }
   
-  void _configureDio() {
+  void _configureDio(AuthInterceptor? authInterceptor) {
     _dio.options = BaseOptions(
       baseUrl: AppConfig.baseUrl,
       connectTimeout: AppConfig.connectTimeout,
@@ -20,6 +21,10 @@ class DioClient {
         'Accept': 'application/json',
       },
     );
+    
+    if (authInterceptor != null) {
+      _dio.interceptors.add(authInterceptor);
+    }
     
     _dio.interceptors.add(LogInterceptor(
       requestBody: true,
@@ -33,12 +38,4 @@ class DioClient {
   }
   
   Dio get dio => _dio;
-  
-  void updateToken(String? token) {
-    if (token != null && token.isNotEmpty) {
-      _dio.options.headers['Authorization'] = 'Bearer $token';
-    } else {
-      _dio.options.headers.remove('Authorization');
-    }
-  }
 }

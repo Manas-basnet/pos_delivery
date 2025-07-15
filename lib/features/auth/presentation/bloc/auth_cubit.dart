@@ -1,9 +1,10 @@
+import 'dart:async';
 import 'package:equatable/equatable.dart';
-import 'package:pos_delivery_mobile/core/network/api_result.dart';
-import 'package:pos_delivery_mobile/core/utils/auth_failure_handler.dart';
-
-import 'package:pos_delivery_mobile/features/auth/domain/entities/auth_user.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pos_delivery_mobile/core/network/api_result.dart';
+import 'package:pos_delivery_mobile/features/auth/domain/entities/auth_user.dart';
+import 'package:pos_delivery_mobile/features/auth/domain/events/auth_event.dart';
+import 'package:pos_delivery_mobile/features/auth/domain/services/auth_service.dart';
 import 'package:pos_delivery_mobile/features/auth/domain/usecases/get_current_token_usecase.dart';
 import 'package:pos_delivery_mobile/features/auth/domain/usecases/is_authenticated_usecase.dart';
 import 'package:pos_delivery_mobile/features/auth/domain/usecases/login_usecase.dart';
@@ -12,13 +13,15 @@ import 'package:pos_delivery_mobile/features/auth/domain/usecases/refresh_token_
 
 part 'auth_state.dart';
 
-class AuthCubit extends Cubit<AuthState> implements AuthFailureCallback {
+class AuthCubit extends Cubit<AuthState> {
   final LoginUseCase loginUseCase;
   final LogoutUseCase logoutUseCase;
   final RefreshTokenUseCase refreshTokenUseCase;
   final IsAuthenticatedUseCase isAuthenticatedUseCase;
   final GetCurrentTokenUseCase getCurrentTokenUseCase;
-  final AuthFailureHandler authFailureHandler;
+  final AuthService authService;
+
+  late final StreamSubscription<AuthEvent> _authEventSubscription;
 
   AuthCubit({
     required this.loginUseCase,
@@ -26,16 +29,42 @@ class AuthCubit extends Cubit<AuthState> implements AuthFailureCallback {
     required this.refreshTokenUseCase,
     required this.isAuthenticatedUseCase,
     required this.getCurrentTokenUseCase,
-    required this.authFailureHandler,
+    required this.authService,
   }) : super(const AuthInitial()) {
-    authFailureHandler.setCallback(this);
+    _authEventSubscription = authService.authEventStream.listen(_handleAuthEvent);
     checkAuthStatus();
   }
 
-  @override
-  void onAuthFailure(String message, FailureType type) {
-    if (type == FailureType.auth && state is! AuthUnauthenticated) {
-      resetToUnauthenticated();
+  void _handleAuthEvent(AuthEvent event) {
+    switch (event) {
+      case TokenRefreshedEvent():
+        _handleTokenRefreshed(event.newToken);
+        break;
+      case ForceLogoutEvent():
+        _handleForceLogout();
+        break;
+      case AuthenticationFailedEvent():
+        _handleAuthenticationFailed(event.reason);
+        break;
+    }
+  }
+
+  void _handleTokenRefreshed(String newToken) {
+    if (state is AuthAuthenticated) {
+      final currentUser = (state as AuthAuthenticated).user;
+      emit(AuthAuthenticated(currentUser.copyWith(token: newToken)));
+    }
+  }
+
+  void _handleForceLogout() {
+    if (state is! AuthUnauthenticated) {
+      emit(const AuthUnauthenticated());
+    }
+  }
+
+  void _handleAuthenticationFailed(String reason) {
+    if (state is! AuthUnauthenticated && state is! AuthError) {
+      emit(AuthError(reason, FailureType.auth));
     }
   }
 
@@ -57,7 +86,7 @@ class AuthCubit extends Cubit<AuthState> implements AuthFailureCallback {
 
     result.fold(
       onSuccess: (_) => emit(const AuthUnauthenticated()),
-      onFailure: (message, type) => emit(AuthError(message, type)),
+      onFailure: (message, type) => emit(const AuthUnauthenticated()),
     );
   }
 
@@ -72,13 +101,13 @@ class AuthCubit extends Cubit<AuthState> implements AuthFailureCallback {
           final tokenResult = await getCurrentTokenUseCase();
           tokenResult.fold(
             onSuccess: (token) {
-              if (token != null) {
+              if (token != null && token.isNotEmpty) {
                 emit(AuthAuthenticated(AuthUser(token: token)));
               } else {
                 emit(const AuthUnauthenticated());
               }
             },
-            onFailure: (message, type) => emit(const AuthUnauthenticated()),
+            onFailure: (_, __) => emit(const AuthUnauthenticated()),
           );
         } else {
           emit(const AuthUnauthenticated());
@@ -98,15 +127,23 @@ class AuthCubit extends Cubit<AuthState> implements AuthFailureCallback {
           emit(AuthAuthenticated(currentUser.copyWith(token: newToken)));
         }
       },
-      onFailure: (message, type) => emit(const AuthUnauthenticated()),
+      onFailure: (_, type) {
+        if (type == FailureType.auth) {
+          emit(const AuthUnauthenticated());
+        }
+      },
     );
   }
 
-  void resetToUnauthenticated() {
-    emit(const AuthUnauthenticated());
+  void resetError() {
+    if (state is AuthError) {
+      emit(const AuthInitial());
+    }
   }
 
-  void resetError() {
-    emit(const AuthInitial());
+  @override
+  Future<void> close() {
+    _authEventSubscription.cancel();
+    return super.close();
   }
 }
