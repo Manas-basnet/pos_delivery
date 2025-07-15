@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pos_delivery_mobile/config/routes/router_guard.dart';
 import 'package:pos_delivery_mobile/config/routes/routes_constants.dart';
 import 'package:pos_delivery_mobile/core/di/di.dart' as di;
 import 'package:pos_delivery_mobile/features/auth/presentation/bloc/auth_cubit.dart';
@@ -27,45 +28,7 @@ class AppRouter {
     initialLocation: Routes.splash,
     navigatorKey: _rootNavigatorKey,
     debugLogDiagnostics: true,
-    redirect: (context, state) {
-      final authCubit = context.read<AuthCubit>();
-      final authState = authCubit.state;
-
-      final currentLocation = state.matchedLocation;
-
-      if (authState is AuthInitial) {
-        return Routes.splash;
-      }
-
-      final isAuthenticated = authState is AuthAuthenticated;
-
-      if (authState is AuthLoading) {
-        final isGoingToSplash = currentLocation == Routes.splash;
-        return isGoingToSplash ? null : Routes.splash;
-      }
-
-      if (authState is AuthError) {
-        final isGoingToLogin = currentLocation == Routes.login;
-        return isGoingToLogin ? null : Routes.login;
-      }
-
-      final isGoingToLogin = currentLocation == Routes.login;
-      final isGoingToSplash = currentLocation == Routes.splash;
-
-      if (isGoingToSplash && authState is! AuthLoading) {
-        return isAuthenticated ? Routes.home : Routes.login;
-      }
-
-      if (!isAuthenticated) {
-        return isGoingToLogin ? null : Routes.login;
-      }
-
-      if (isAuthenticated && isGoingToLogin) {
-        return Routes.home;
-      }
-
-      return null;
-    },
+    redirect: RouterGuard.handleRedirect,
     routes: [
       // Auth routes
       GoRoute(

@@ -20,7 +20,7 @@ class AppConfig {
     }
   }
   
-  static Duration get connectTimeout => const Duration(seconds: 30);
-  static Duration get receiveTimeout => const Duration(seconds: 30);
-  static Duration get sendTimeout => const Duration(seconds: 30);
+  static Duration get connectTimeout => const Duration(seconds: 5);
+  static Duration get receiveTimeout => const Duration(seconds: 5);
+  static Duration get sendTimeout => const Duration(seconds: 5);
 }

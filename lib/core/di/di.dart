@@ -4,7 +4,7 @@ import 'package:pos_delivery_mobile/core/di/core_di.dart';
 
 final sl = GetIt.instance;
 
-init() {
-  initCore(sl);
-  initAuth(sl);
+Future<void> init() async {
+  await initCore(sl);
+  await initAuth(sl);
 }

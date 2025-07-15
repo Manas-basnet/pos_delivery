@@ -8,7 +8,7 @@ void main() async {
   
   AppConfig.setFlavor(AppFlavor.dev);
   
-  di.init();
+  await di.init();
   
   runApp(const MyApp());
 }

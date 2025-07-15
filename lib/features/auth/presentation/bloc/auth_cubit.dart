@@ -80,14 +80,14 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   Future<void> logout() async {
-    emit(const AuthLoading());
+    emit(const AuthUnauthenticated());
 
-    final result = await logoutUseCase();
+    // final result = await logoutUseCase();
 
-    result.fold(
-      onSuccess: (_) => emit(const AuthUnauthenticated()),
-      onFailure: (message, type) => emit(const AuthUnauthenticated()),
-    );
+    // result.fold(
+    //   onSuccess: (_) => emit(const AuthUnauthenticated()),
+    //   onFailure: (message, type) => emit(const AuthUnauthenticated()),
+    // );
   }
 
   Future<void> checkAuthStatus() async {
