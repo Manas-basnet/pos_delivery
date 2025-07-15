@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:pos_delivery_mobile/core/network/api_result.dart';
+import 'package:pos_delivery_mobile/core/utils/auth_failure_handler.dart';
+
 import 'package:pos_delivery_mobile/features/auth/domain/entities/auth_user.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pos_delivery_mobile/features/auth/domain/usecases/get_current_token_usecase.dart';
@@ -10,12 +12,13 @@ import 'package:pos_delivery_mobile/features/auth/domain/usecases/refresh_token_
 
 part 'auth_state.dart';
 
-class AuthCubit extends Cubit<AuthState> {
+class AuthCubit extends Cubit<AuthState> implements AuthFailureCallback {
   final LoginUseCase loginUseCase;
   final LogoutUseCase logoutUseCase;
   final RefreshTokenUseCase refreshTokenUseCase;
   final IsAuthenticatedUseCase isAuthenticatedUseCase;
   final GetCurrentTokenUseCase getCurrentTokenUseCase;
+  final AuthFailureHandler authFailureHandler;
 
   AuthCubit({
     required this.loginUseCase,
@@ -23,8 +26,17 @@ class AuthCubit extends Cubit<AuthState> {
     required this.refreshTokenUseCase,
     required this.isAuthenticatedUseCase,
     required this.getCurrentTokenUseCase,
+    required this.authFailureHandler,
   }) : super(const AuthInitial()) {
+    authFailureHandler.setCallback(this);
     checkAuthStatus();
+  }
+
+  @override
+  void onAuthFailure(String message, FailureType type) {
+    if (type == FailureType.auth && state is! AuthUnauthenticated) {
+      resetToUnauthenticated();
+    }
   }
 
   Future<void> login(String username, String password) async {

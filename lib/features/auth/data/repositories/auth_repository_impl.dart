@@ -11,6 +11,7 @@ import 'package:pos_delivery_mobile/features/auth/domain/repositories/auth_repos
 class AuthRepositoryImpl extends BaseRepository implements AuthRepository {
   AuthRepositoryImpl({
     required super.networkInfo,
+    required super.authFailureHandler,
     required this.localDatasource,
     required this.remoteDatasource,
   });

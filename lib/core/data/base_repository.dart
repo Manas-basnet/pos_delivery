@@ -3,11 +3,16 @@ import 'package:pos_delivery_mobile/core/data/base_response.dart';
 import 'package:pos_delivery_mobile/core/network/api_result.dart';
 import 'package:pos_delivery_mobile/core/network/network_info.dart';
 import 'package:pos_delivery_mobile/core/utils/exception_handler.dart';
+import 'package:pos_delivery_mobile/core/utils/auth_failure_handler.dart';
 
 abstract class BaseRepository {
-  BaseRepository({required this.networkInfo});
+  BaseRepository({
+    required this.networkInfo,
+    required this.authFailureHandler,
+  });
 
-  NetworkInfo networkInfo;
+  final NetworkInfo networkInfo;
+  final AuthFailureHandler authFailureHandler;
 
   FailureType _getFailureTypeFromStatusCode(int statusCode) {
     switch (statusCode) {
@@ -42,7 +47,7 @@ abstract class BaseRepository {
         final message = data.message ?? 'Request failed with status code $statusCode';
         
         if (failureType == FailureType.auth) {
-          
+          authFailureHandler.handleAuthFailure(message, failureType);
         }
         
         return ApiResult.failure(message, failureType);

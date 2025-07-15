@@ -28,7 +28,7 @@ class AppRouter {
     navigatorKey: _rootNavigatorKey,
     debugLogDiagnostics: true,
     redirect: (context, state) {
-      final authCubit = di.sl<AuthCubit>();
+      final authCubit = context.read<AuthCubit>();
       final authState = authCubit.state;
 
       final currentLocation = state.matchedLocation;

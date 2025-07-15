@@ -1,4 +1,5 @@
 import 'package:get_it/get_it.dart';
+import 'package:pos_delivery_mobile/core/utils/auth_failure_handler.dart';
 import 'package:pos_delivery_mobile/features/auth/data/datasources/local/shared_prefs_auth_local_datasrouce_impl.dart';
 import 'package:pos_delivery_mobile/features/auth/data/datasources/remote/auth_remote_datasource_impl.dart';
 import 'package:pos_delivery_mobile/features/auth/data/repositories/auth_repository_impl.dart';
@@ -13,6 +14,11 @@ import 'package:pos_delivery_mobile/features/auth/domain/usecases/refresh_token_
 import 'package:pos_delivery_mobile/features/auth/presentation/bloc/auth_cubit.dart';
 
 Future<void> initAuth(GetIt sl) async {
+
+  sl.registerLazySingleton<AuthFailureHandler>(
+    () => AuthFailureHandler(),
+  );
+
   sl.registerFactory(
     () => AuthCubit(
       loginUseCase: sl(),
@@ -20,6 +26,7 @@ Future<void> initAuth(GetIt sl) async {
       refreshTokenUseCase: sl(),
       isAuthenticatedUseCase: sl(),
       getCurrentTokenUseCase: sl(),
+      authFailureHandler: sl(),
     ),
   );
 
@@ -34,6 +41,7 @@ Future<void> initAuth(GetIt sl) async {
       networkInfo: sl(),
       localDatasource: sl(),
       remoteDatasource: sl(),
+      authFailureHandler: sl(),
     ),
   );
 
