@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pos_delivery_mobile/config/routes/router_guard.dart';
 import 'package:pos_delivery_mobile/config/routes/routes_constants.dart';
-import 'package:pos_delivery_mobile/core/di/di.dart' as di;
-import 'package:pos_delivery_mobile/features/auth/presentation/bloc/auth_cubit.dart';
 import 'package:pos_delivery_mobile/features/auth/presentation/pages/login_screen.dart';
 import 'package:pos_delivery_mobile/features/home/presentation/pages/home_screen.dart';
 import 'package:pos_delivery_mobile/features/profile/presentation/pages/profile_screen.dart';
+import 'package:pos_delivery_mobile/shared/presentation/layouts/scaffold_with_bottom_nav_bar.dart';
 import 'package:pos_delivery_mobile/shared/presentation/pages/splash_screen.dart';
 
 class AppRouter {
@@ -87,56 +85,4 @@ class AppRouter {
       ),
     ],
   );
-}
-
-class ScaffoldWithBottomNavBar extends StatelessWidget {
-  final StatefulNavigationShell navigationShell;
-
-  const ScaffoldWithBottomNavBar({
-    super.key,
-    required this.navigationShell,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return BlocProvider.value(
-      value: di.sl<AuthCubit>(),
-      child: Scaffold(
-        body: navigationShell,
-        bottomNavigationBar: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: colorScheme.surface,
-          selectedItemColor: colorScheme.primary,
-          unselectedItemColor: colorScheme.onSurface.withValues(alpha: 0.6),
-          showUnselectedLabels: true,
-          currentIndex: navigationShell.currentIndex,
-          onTap: (index) => _onItemTapped(index, context),
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home_rounded),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person_rounded),
-              label: 'Profile',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.settings_rounded),
-              label: 'Settings',
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _onItemTapped(int index, BuildContext context) {
-    navigationShell.goBranch(
-      index,
-      initialLocation: index == navigationShell.currentIndex,
-    );
-  }
 }

@@ -106,41 +106,35 @@ class AuthRepositoryImpl extends BaseRepository implements AuthRepository {
   Future<ApiResult<String?>> getCurrentToken() async {
     return ExceptionHandler.handleExceptions(() async {
       final token = await localDatasource.getToken();
-      return ApiResult.success('hsahdiahsi');
+      return ApiResult.success(token);
     });
   }
 
-  // @override
-  // Future<ApiResult<bool>> isAuthenticated() async {
-  //   return ExceptionHandler.handleExceptions(() async {
-  //     final token = await localDatasource.getToken();
-      
-  //     if (token == null || token.isEmpty) {
-  //       return ApiResult.success(false);
-  //     }
-
-  //     if (!(await networkInfo.isConnected)) {
-  //       return ApiResult.success(true);
-  //     }
-
-  //     try {
-  //       final isValid = await remoteDatasource.validateToken(token);
-        
-  //       if (!isValid) {
-  //         await localDatasource.clearAuthData();
-  //         return ApiResult.success(false);
-  //       }
-
-  //       return ApiResult.success(true);
-  //     } catch (e) {
-  //       return ApiResult.success(true);
-  //     }
-  //   });
-  // }
   @override
   Future<ApiResult<bool>> isAuthenticated() async {
     return ExceptionHandler.handleExceptions(() async {
-      return ApiResult.success(true);
+      final token = await localDatasource.getToken();
+      
+      if (token == null || token.isEmpty) {
+        return ApiResult.success(false);
+      }
+
+      if (!(await networkInfo.isConnected)) {
+        return ApiResult.success(true);
+      }
+
+      try {
+        final isValid = await remoteDatasource.validateToken(token);
+        
+        if (!isValid) {
+          await localDatasource.clearAuthData();
+          return ApiResult.success(false);
+        }
+
+        return ApiResult.success(true);
+      } catch (e) {
+        return ApiResult.success(true);
+      }
     });
   }
 }
