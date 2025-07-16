@@ -1,4 +1,4 @@
-import 'package:pos_delivery_mobile/features/auth/domain/datasources/local/auth_local_datasource.dart';
+import 'package:udharoo/features/auth/domain/datasources/local/auth_local_datasource.dart';
 import 'package:shared_preferences/shared_preferences.dart' show SharedPreferences;
 
 class AuthLocalDatasourceImpl implements AuthLocalDatasource {

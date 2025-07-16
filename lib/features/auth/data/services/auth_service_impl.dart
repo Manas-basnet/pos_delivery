@@ -1,8 +1,8 @@
 import 'dart:async';
-import 'package:pos_delivery_mobile/core/network/api_result.dart';
-import 'package:pos_delivery_mobile/features/auth/domain/events/auth_event.dart';
-import 'package:pos_delivery_mobile/features/auth/domain/repositories/auth_repository.dart';
-import 'package:pos_delivery_mobile/features/auth/domain/services/auth_service.dart';
+import 'package:udharoo/core/network/api_result.dart';
+import 'package:udharoo/features/auth/domain/events/auth_event.dart';
+import 'package:udharoo/features/auth/domain/repositories/auth_repository.dart';
+import 'package:udharoo/features/auth/domain/services/auth_service.dart';
 
 class AuthServiceImpl implements AuthService {
   final AuthRepository _authRepository;

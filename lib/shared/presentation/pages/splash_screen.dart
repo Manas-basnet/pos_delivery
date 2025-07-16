@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pos_delivery_mobile/features/auth/presentation/bloc/auth_cubit.dart';
+import 'package:udharoo/features/auth/presentation/bloc/auth_cubit.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});

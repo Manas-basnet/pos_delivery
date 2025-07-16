@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:pos_delivery_mobile/config/app_config.dart';
-import 'package:pos_delivery_mobile/core/network/interceptors/auth_interceptor.dart';
+import 'package:udharoo/config/app_config.dart';
+import 'package:udharoo/core/network/interceptors/auth_interceptor.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 class DioClient {

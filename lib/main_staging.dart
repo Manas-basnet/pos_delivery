@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:pos_delivery_mobile/config/app_config.dart';
-import 'package:pos_delivery_mobile/core/di/di.dart' as di;
-import 'package:pos_delivery_mobile/app.dart';
+import 'package:udharoo/config/app_config.dart';
+import 'package:udharoo/core/di/di.dart' as di;
+import 'package:udharoo/app.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

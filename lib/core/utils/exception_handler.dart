@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
-import 'package:pos_delivery_mobile/core/network/api_result.dart';
+import 'package:udharoo/core/network/api_result.dart';
 
 class ExceptionHandler {
   static Future<ApiResult<T>> handleExceptions<T>(

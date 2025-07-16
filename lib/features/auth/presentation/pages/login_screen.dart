@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pos_delivery_mobile/features/auth/presentation/bloc/auth_cubit.dart';
+import 'package:udharoo/features/auth/presentation/bloc/auth_cubit.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,14 +17,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: BlocConsumer<AuthCubit, AuthState>(
-        listener: (context, state) {
-          if (state is AuthError) {
-            //TODO: smth here
-          } else if (state is AuthAuthenticated) {
-            //TODO: Do something with this
-          }
-        },
+      body: BlocBuilder<AuthCubit, AuthState>(
         builder: (context, state) {
           return SafeArea(
             child: Padding(

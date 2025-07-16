@@ -1,15 +1,15 @@
 import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pos_delivery_mobile/core/network/api_result.dart';
-import 'package:pos_delivery_mobile/features/auth/domain/entities/auth_user.dart';
-import 'package:pos_delivery_mobile/features/auth/domain/events/auth_event.dart';
-import 'package:pos_delivery_mobile/features/auth/domain/services/auth_service.dart';
-import 'package:pos_delivery_mobile/features/auth/domain/usecases/get_current_token_usecase.dart';
-import 'package:pos_delivery_mobile/features/auth/domain/usecases/is_authenticated_usecase.dart';
-import 'package:pos_delivery_mobile/features/auth/domain/usecases/login_usecase.dart';
-import 'package:pos_delivery_mobile/features/auth/domain/usecases/logout_usecase.dart';
-import 'package:pos_delivery_mobile/features/auth/domain/usecases/refresh_token_usecase.dart';
+import 'package:udharoo/core/network/api_result.dart';
+import 'package:udharoo/features/auth/domain/entities/auth_user.dart';
+import 'package:udharoo/features/auth/domain/events/auth_event.dart';
+import 'package:udharoo/features/auth/domain/services/auth_service.dart';
+import 'package:udharoo/features/auth/domain/usecases/get_current_token_usecase.dart';
+import 'package:udharoo/features/auth/domain/usecases/is_authenticated_usecase.dart';
+import 'package:udharoo/features/auth/domain/usecases/login_usecase.dart';
+import 'package:udharoo/features/auth/domain/usecases/logout_usecase.dart';
+import 'package:udharoo/features/auth/domain/usecases/refresh_token_usecase.dart';
 
 part 'auth_state.dart';
 

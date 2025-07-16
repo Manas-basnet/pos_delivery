@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pos_delivery_mobile/shared/presentation/widgets/log_out_dialog.dart';
+import 'package:udharoo/shared/presentation/widgets/log_out_dialog.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -22,7 +22,7 @@ class HomeScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Welcome to POS Delivery',
+              'Welcome to POS Home',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,

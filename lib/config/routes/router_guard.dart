@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:pos_delivery_mobile/config/routes/routes_constants.dart';
-import 'package:pos_delivery_mobile/features/auth/presentation/bloc/auth_cubit.dart';
+import 'package:udharoo/config/routes/routes_constants.dart';
+import 'package:udharoo/features/auth/presentation/bloc/auth_cubit.dart';
 
 class RouterGuard {
   static String? handleRedirect(BuildContext context, GoRouterState state) {

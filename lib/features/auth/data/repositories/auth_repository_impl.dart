@@ -1,12 +1,12 @@
-import 'package:pos_delivery_mobile/core/data/base_repository.dart';
-import 'package:pos_delivery_mobile/core/network/api_result.dart';
-import 'package:pos_delivery_mobile/core/utils/exception_handler.dart';
-import 'package:pos_delivery_mobile/features/auth/data/models/login_response_model.dart';
-import 'package:pos_delivery_mobile/features/auth/data/models/logout_response_model.dart';
-import 'package:pos_delivery_mobile/features/auth/domain/datasources/local/auth_local_datasource.dart';
-import 'package:pos_delivery_mobile/features/auth/domain/datasources/remote/auth_remote_datasource.dart';
-import 'package:pos_delivery_mobile/features/auth/domain/entities/auth_user.dart';
-import 'package:pos_delivery_mobile/features/auth/domain/repositories/auth_repository.dart';
+import 'package:udharoo/core/data/base_repository.dart';
+import 'package:udharoo/core/network/api_result.dart';
+import 'package:udharoo/core/utils/exception_handler.dart';
+import 'package:udharoo/features/auth/data/models/login_response_model.dart';
+import 'package:udharoo/features/auth/data/models/logout_response_model.dart';
+import 'package:udharoo/features/auth/domain/datasources/local/auth_local_datasource.dart';
+import 'package:udharoo/features/auth/domain/datasources/remote/auth_remote_datasource.dart';
+import 'package:udharoo/features/auth/domain/entities/auth_user.dart';
+import 'package:udharoo/features/auth/domain/repositories/auth_repository.dart';
 
 class AuthRepositoryImpl extends BaseRepository implements AuthRepository {
   AuthRepositoryImpl({
@@ -41,7 +41,7 @@ class AuthRepositoryImpl extends BaseRepository implements AuthRepository {
 
       return result.fold(
         onSuccess: (loginResponse) {
-          if (loginResponse.token == null) {
+          if (loginResponse.token == null || loginResponse.statusCode != 200) {
             return ApiResult.failure('Login failed: No token received', FailureType.validation);
           }
           

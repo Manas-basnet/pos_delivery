@@ -1,4 +1,4 @@
-import 'package:pos_delivery_mobile/core/data/base_response.dart';
+import 'package:udharoo/core/data/base_response.dart';
 
 class LoginResponseModel extends BaseResponseResult {
   final String? token;

@@ -1,14 +1,14 @@
 import 'package:get_it/get_it.dart';
-import 'package:pos_delivery_mobile/config/app_config.dart';
-import 'package:pos_delivery_mobile/core/network/dio_client.dart';
-import 'package:pos_delivery_mobile/core/network/network_info.dart';
-import 'package:pos_delivery_mobile/core/network/interceptors/auth_interceptor.dart';
-import 'package:pos_delivery_mobile/core/services/jwt_service.dart';
-import 'package:pos_delivery_mobile/core/services/device_info_service.dart';
+import 'package:udharoo/config/app_config.dart';
+import 'package:udharoo/core/network/dio_client.dart';
+import 'package:udharoo/core/network/network_info.dart';
+import 'package:udharoo/core/network/interceptors/auth_interceptor.dart';
+import 'package:udharoo/core/services/device_info_service.dart';
+import 'package:udharoo/core/theme/theme_cubit/theme_cubit.dart';
 
 Future<void> initCore(GetIt sl) async {
-  sl.registerLazySingleton<JwtService>(() => JwtServiceImpl());
   sl.registerLazySingleton<DeviceInfoService>(() => DeviceInfoServiceImpl());
+  sl.registerLazySingleton<ThemeCubit>(() => ThemeCubit());
   
   sl.registerLazySingleton<DioClient>(
     () => DioClient(baseUrl: AppConfig.authBaseUrl),

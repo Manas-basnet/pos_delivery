@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:pos_delivery_mobile/features/auth/domain/services/auth_service.dart';
+import 'package:udharoo/features/auth/domain/services/auth_service.dart';
 
 class AuthInterceptor extends Interceptor {
   final AuthService _authService;

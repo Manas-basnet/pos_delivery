@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pos_delivery_mobile/features/auth/presentation/bloc/auth_cubit.dart';
-import 'package:pos_delivery_mobile/shared/presentation/widgets/log_out_dialog.dart';
+import 'package:udharoo/features/auth/presentation/bloc/auth_cubit.dart';
+import 'package:udharoo/shared/presentation/widgets/log_out_dialog.dart';
+
+import '../../../../core/theme/theme_cubit/theme_cubit.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -9,9 +11,7 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profile'),
-      ),
+      appBar: AppBar(title: const Text('Profile')),
       body: BlocBuilder<AuthCubit, AuthState>(
         builder: (context, state) {
           return Padding(
@@ -34,10 +34,7 @@ class ProfileScreen extends StatelessWidget {
                   const SizedBox(height: 8),
                   Text(
                     state.user.userId ?? 'ID not available',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey,
-                    ),
+                    style: const TextStyle(fontSize: 16, color: Colors.grey),
                   ),
                 ],
                 const SizedBox(height: 32),
@@ -85,26 +82,36 @@ class ProfileScreen extends StatelessWidget {
   }
 }
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  bool isDarkmode = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-      ),
+      appBar: AppBar(title: const Text('Settings')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            const Card(
+            Card(
               child: ListTile(
                 leading: Icon(Icons.dark_mode),
                 title: Text('Dark Mode'),
                 trailing: Switch(
-                  value: false,
-                  onChanged: null,
+                  value: isDarkmode,
+                  onChanged: (value) {
+                    setState(() {
+                      isDarkmode = value;
+                      context.read<ThemeCubit>().setDarkMode(value);
+                    });
+                  },
                 ),
               ),
             ),

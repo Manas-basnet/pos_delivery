@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'package:pos_delivery_mobile/core/network/api_result.dart';
-import 'package:pos_delivery_mobile/core/network/network_info.dart';
-import 'package:pos_delivery_mobile/core/utils/exception_handler.dart';
+import 'package:udharoo/core/network/api_result.dart';
+import 'package:udharoo/core/network/network_info.dart';
+import 'package:udharoo/core/utils/exception_handler.dart';
 
 abstract class BaseRepository {
   BaseRepository({required this.networkInfo});
