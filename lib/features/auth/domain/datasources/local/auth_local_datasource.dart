@@ -1,12 +1,14 @@
 abstract class AuthLocalDatasource {
-  Future<void> saveToken(String token);
-  Future<String?> getToken();
-
-  Future<void> saveRefreshToken(String token);
-  Future<String?> getRefreshToken();
-
-  Future<void> clearTokens();
+  Future<void> saveUserData({
+    required String uid,
+    String? email,
+    String? displayName,
+    String? phoneNumber,
+    String? photoURL,
+    bool? emailVerified,
+  });
   
-  Future<void> saveUserData(String userId, String username);
-  Future<void> clearAuthData();
+  Future<Map<String, dynamic>?> getUserData();
+  Future<void> clearUserData();
+  Future<bool> hasUserData();
 }

@@ -58,21 +58,27 @@ class AppRouter {
           ),
 
           // Profile branch
-          StatefulShellBranch(
-            navigatorKey: _profileNavigatorKey,
-            routes: [
-
-            ],
-          ),
-
-
-          // Settings branch
-          StatefulShellBranch(
-            navigatorKey: _settingsNavigatorKey,
-            routes: [
-
-            ],
-          ),
+          // StatefulShellBranch(
+          //   navigatorKey: _profileNavigatorKey,
+          //   routes: [
+          //     GoRoute(
+          //       path: '/profile',
+          //       name: 'profile',
+          //       builder: (context, state) => const ProfileScreen(), // Create this screen
+          //     ),
+          //   ],
+          // ),
+          // // Settings branch
+          // StatefulShellBranch(
+          //   navigatorKey: _settingsNavigatorKey,
+          //   routes: [
+          //     GoRoute(
+          //       path: '/settings',
+          //       name: 'settings',
+          //       builder: (context, state) => const SettingsScreen(), // Create this screen
+          //     ),
+          //   ],
+          // ),
         ],
       ),
     ],

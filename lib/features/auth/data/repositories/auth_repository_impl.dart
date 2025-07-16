@@ -1,140 +1,145 @@
-import 'package:udharoo/core/data/base_repository.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:udharoo/core/network/api_result.dart';
 import 'package:udharoo/core/utils/exception_handler.dart';
-import 'package:udharoo/features/auth/data/models/login_response_model.dart';
-import 'package:udharoo/features/auth/data/models/logout_response_model.dart';
 import 'package:udharoo/features/auth/domain/datasources/local/auth_local_datasource.dart';
 import 'package:udharoo/features/auth/domain/datasources/remote/auth_remote_datasource.dart';
 import 'package:udharoo/features/auth/domain/entities/auth_user.dart';
 import 'package:udharoo/features/auth/domain/repositories/auth_repository.dart';
 
-class AuthRepositoryImpl extends BaseRepository implements AuthRepository {
+class AuthRepositoryImpl implements AuthRepository {
+  final AuthLocalDatasource _localDatasource;
+  final AuthRemoteDatasource _remoteDatasource;
+
   AuthRepositoryImpl({
-    required super.networkInfo,
-    required this.localDatasource,
-    required this.remoteDatasource,
-  });
-
-  final AuthLocalDatasource localDatasource;
-  final AuthRemoteDatasource remoteDatasource;
+    required AuthLocalDatasource localDatasource,
+    required AuthRemoteDatasource remoteDatasource,
+  })  : _localDatasource = localDatasource,
+        _remoteDatasource = remoteDatasource;
 
   @override
-  Future<ApiResult<AuthUser>> login(String username, String password) async {
+  Future<ApiResult<AuthUser>> signInWithEmailAndPassword(
+      String email, String password) async {
     return ExceptionHandler.handleExceptions(() async {
-      final result = await handleRemoteCallFirst<LoginResponseModel>(
-        remoteCall: () async {
-          final response = await remoteDatasource.login(username, password);
-          return ApiResult.success(response);
-        },
-        saveLocalData: (loginResponse) async {
-          if (loginResponse?.token != null) {
-            await localDatasource.saveToken(loginResponse!.token!);
-            if (loginResponse.refreshToken != null) {
-              await localDatasource.saveRefreshToken(loginResponse.refreshToken!);
-            }
-            if (loginResponse.id != null) {
-              await localDatasource.saveUserData(loginResponse.id!, username);
-            }
-          }
-        },
-      );
-
-      return result.fold(
-        onSuccess: (loginResponse) {
-          if (loginResponse.token == null || loginResponse.statusCode != 200) {
-            return ApiResult.failure('Login failed: No token received', FailureType.validation);
-          }
-          
-          final authUser = AuthUser(
-            token: loginResponse.token!,
-            refreshToken: loginResponse.refreshToken,
-            userId: loginResponse.id,
-            username: username,
-          );
-          
-          return ApiResult.success(authUser);
-        },
-        onFailure: (message, type) => ApiResult.failure(message, type),
-      );
-    });
-  }
-
-  @override
-  Future<ApiResult<void>> logout() async {
-    return ExceptionHandler.handleExceptions(() async {
-      final result = await handleRemoteCallFirst<LogoutResponseModel>(
-        remoteCall: () async {
-          final response = await remoteDatasource.logout();
-          return ApiResult.success(response);
-        },
-        localCall: () async {
-          await localDatasource.clearAuthData();
-          return ApiResult.success(LogoutResponseModel());
-        },
-        saveLocalData: (logoutResponse) async {
-          await localDatasource.clearAuthData();
-        },
-      );
-
-      return result.fold(
-        onSuccess: (_) => ApiResult.success(null),
-        onFailure: (message, type) {
-          localDatasource.clearAuthData();
-          return ApiResult.success(null);
-        },
-      );
-    });
-  }
-
-  @override
-  Future<ApiResult<String>> refreshToken() async {
-    return ExceptionHandler.handleExceptions(() async {
-      final refreshTokenResult = await localDatasource.getRefreshToken();
+      final user = await _remoteDatasource.signInWithEmailAndPassword(email, password);
+      final authUser = _mapFirebaseUserToAuthUser(user);
       
-      if (refreshTokenResult == null || refreshTokenResult.isEmpty) {
-        return ApiResult.failure('No refresh token available', FailureType.auth);
-      }
-
-      final newToken = await remoteDatasource.refreshToken(refreshTokenResult);
-      await localDatasource.saveToken(newToken);
+      await _localDatasource.saveUserData(
+        uid: authUser.uid,
+        email: authUser.email,
+        displayName: authUser.displayName,
+        phoneNumber: authUser.phoneNumber,
+        photoURL: authUser.photoURL,
+        emailVerified: authUser.emailVerified,
+      );
       
-      return ApiResult.success(newToken);
+      return ApiResult.success(authUser);
     });
   }
 
   @override
-  Future<ApiResult<String?>> getCurrentToken() async {
+  Future<ApiResult<AuthUser>> createUserWithEmailAndPassword(
+      String email, String password) async {
     return ExceptionHandler.handleExceptions(() async {
-      final token = await localDatasource.getToken();
-      return ApiResult.success(token);
+      final user = await _remoteDatasource.createUserWithEmailAndPassword(email, password);
+      final authUser = _mapFirebaseUserToAuthUser(user);
+      
+      await _localDatasource.saveUserData(
+        uid: authUser.uid,
+        email: authUser.email,
+        displayName: authUser.displayName,
+        phoneNumber: authUser.phoneNumber,
+        photoURL: authUser.photoURL,
+        emailVerified: authUser.emailVerified,
+      );
+      
+      return ApiResult.success(authUser);
+    });
+  }
+
+  @override
+  Future<ApiResult<void>> signOut() async {
+    return ExceptionHandler.handleExceptions(() async {
+      await _remoteDatasource.signOut();
+      await _localDatasource.clearUserData();
+      return ApiResult.success(null);
+    });
+  }
+
+  @override
+  Future<ApiResult<void>> sendPasswordResetEmail(String email) async {
+    return ExceptionHandler.handleExceptions(() async {
+      await _remoteDatasource.sendPasswordResetEmail(email);
+      return ApiResult.success(null);
+    });
+  }
+
+  @override
+  Future<ApiResult<void>> sendEmailVerification() async {
+    return ExceptionHandler.handleExceptions(() async {
+      await _remoteDatasource.sendEmailVerification();
+      return ApiResult.success(null);
     });
   }
 
   @override
   Future<ApiResult<bool>> isAuthenticated() async {
     return ExceptionHandler.handleExceptions(() async {
-      final token = await localDatasource.getToken();
-      
-      if (token == null || token.isEmpty) {
-        return ApiResult.success(false);
-      }
+      final user = _remoteDatasource.getCurrentUser();
+      return ApiResult.success(user != null);
+    });
+  }
 
-      if (!(await networkInfo.isConnected)) {
-        return ApiResult.success(true);
-      }
-
-      try {
-        final isValid = await remoteDatasource.validateToken(token);
+  @override
+  Future<ApiResult<AuthUser?>> getCurrentUser() async {
+    return ExceptionHandler.handleExceptions(() async {
+      final user = _remoteDatasource.getCurrentUser();
+      if (user != null) {
+        final authUser = _mapFirebaseUserToAuthUser(user);
         
-        if (!isValid) {
-          await localDatasource.clearAuthData();
-          return ApiResult.success(false);
-        }
+        await _localDatasource.saveUserData(
+          uid: authUser.uid,
+          email: authUser.email,
+          displayName: authUser.displayName,
+          phoneNumber: authUser.phoneNumber,
+          photoURL: authUser.photoURL,
+          emailVerified: authUser.emailVerified,
+        );
+        
+        return ApiResult.success(authUser);
+      }
+      return ApiResult.success(null);
+    });
+  }
 
-        return ApiResult.success(true);
-      } catch (e) {
-        return ApiResult.success(true);
+  @override
+  Stream<AuthUser?> get authStateChanges {
+    return _remoteDatasource.authStateChanges.map((user) {
+      if (user != null) {
+        final authUser = _mapFirebaseUserToAuthUser(user);
+        _localDatasource.saveUserData(
+          uid: authUser.uid,
+          email: authUser.email,
+          displayName: authUser.displayName,
+          phoneNumber: authUser.phoneNumber,
+          photoURL: authUser.photoURL,
+          emailVerified: authUser.emailVerified,
+        );
+        return authUser;
+      } else {
+        _localDatasource.clearUserData();
+        return null;
       }
     });
+  }
+
+  AuthUser _mapFirebaseUserToAuthUser(User user) {
+    return AuthUser(
+      uid: user.uid,
+      email: user.email,
+      displayName: user.displayName,
+      phoneNumber: user.phoneNumber,
+      photoURL: user.photoURL,
+      emailVerified: user.emailVerified,
+    );
   }
 }

@@ -1,32 +1,47 @@
 import 'package:equatable/equatable.dart';
 
 class AuthUser extends Equatable {
-  final String token;
-  final String? refreshToken;
-  final String? userId;
-  final String? username;
+  final String uid;
+  final String? email;
+  final String? displayName;
+  final String? phoneNumber;
+  final String? photoURL;
+  final bool emailVerified;
 
   const AuthUser({
-    required this.token,
-    this.refreshToken,
-    this.userId,
-    this.username,
+    required this.uid,
+    this.email,
+    this.displayName,
+    this.phoneNumber,
+    this.photoURL,
+    this.emailVerified = false,
   });
 
   AuthUser copyWith({
-    String? token,
-    String? refreshToken,
-    String? userId,
-    String? username,
+    String? uid,
+    String? email,
+    String? displayName,
+    String? phoneNumber,
+    String? photoURL,
+    bool? emailVerified,
   }) {
     return AuthUser(
-      token: token ?? this.token,
-      refreshToken: refreshToken ?? this.refreshToken,
-      userId: userId ?? this.userId,
-      username: username ?? this.username,
+      uid: uid ?? this.uid,
+      email: email ?? this.email,
+      displayName: displayName ?? this.displayName,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      photoURL: photoURL ?? this.photoURL,
+      emailVerified: emailVerified ?? this.emailVerified,
     );
   }
 
   @override
-  List<Object?> get props => [token, refreshToken, userId, username];
+  List<Object?> get props => [
+        uid,
+        email,
+        displayName,
+        phoneNumber,
+        photoURL,
+        emailVerified,
+      ];
 }

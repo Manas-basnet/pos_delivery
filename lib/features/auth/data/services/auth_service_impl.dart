@@ -1,43 +1,29 @@
 import 'dart:async';
-import 'package:udharoo/core/network/api_result.dart';
+import 'package:udharoo/features/auth/domain/entities/auth_user.dart';
 import 'package:udharoo/features/auth/domain/events/auth_event.dart';
-import 'package:udharoo/features/auth/domain/repositories/auth_repository.dart';
 import 'package:udharoo/features/auth/domain/services/auth_service.dart';
 
 class AuthServiceImpl implements AuthService {
-  final AuthRepository _authRepository;
+  final Stream<AuthUser?> _authStateChanges;
   final _authEventController = StreamController<AuthEvent>.broadcast();
 
-  AuthServiceImpl({required AuthRepository authRepository}) 
-      : _authRepository = authRepository;
+  AuthServiceImpl({required Stream<AuthUser?> authStateChanges}) 
+      : _authStateChanges = authStateChanges {
+    _listenToAuthChanges();
+  }
+
+  @override
+  Stream<AuthUser?> get authStateChanges => _authStateChanges;
 
   @override
   Stream<AuthEvent> get authEventStream => _authEventController.stream;
 
-  @override
-  Future<String?> getCurrentToken() async {
-    final result = await _authRepository.getCurrentToken();
-    return result.data;
-  }
-
-  @override
-  Future<String?> refreshToken() async {
-    final result = await _authRepository.refreshToken();
-    return result.fold(
-      onSuccess: (token) {
-        _authEventController.add(TokenRefreshedEvent(token));
-        return token;
-      },
-      onFailure: (message, type) {
-        _authEventController.add(AuthenticationFailedEvent(message));
-        return null;
-      },
-    );
-  }
-
-  @override
-  Future<void> forceLogout() async {
-    _authEventController.add(ForceLogoutEvent());
+  void _listenToAuthChanges() {
+    _authStateChanges.listen((user) {
+      if (user == null) {
+        _authEventController.add(ForceLogoutEvent());
+      }
+    });
   }
 
   @override

@@ -17,7 +17,7 @@ class LogoutDialog {
             ),
             TextButton(
               onPressed: () {
-                context.read<AuthCubit>().logout();
+                context.read<AuthCubit>().signOut();
                 Navigator.of(dialogContext).pop();
               },
               style: TextButton.styleFrom(

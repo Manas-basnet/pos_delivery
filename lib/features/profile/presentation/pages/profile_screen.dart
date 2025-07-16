@@ -18,26 +18,68 @@ class ProfileScreen extends StatelessWidget {
             padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
-                const CircleAvatar(
+                CircleAvatar(
                   radius: 50,
-                  child: Icon(Icons.person, size: 50),
+                  backgroundImage: state is AuthAuthenticated && state.user.photoURL != null
+                      ? NetworkImage(state.user.photoURL!)
+                      : null,
+                  child: state is AuthAuthenticated && state.user.photoURL == null
+                      ? const Icon(Icons.person, size: 50)
+                      : null,
                 ),
                 const SizedBox(height: 16),
                 if (state is AuthAuthenticated) ...[
                   Text(
-                    state.user.username ?? 'User',
+                    state.user.displayName ?? state.user.email ?? 'User',
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    state.user.userId ?? 'ID not available',
-                    style: const TextStyle(fontSize: 16, color: Colors.grey),
+                  if (state.user.email != null)
+                    Text(
+                      state.user.email!,
+                      style: const TextStyle(fontSize: 16, color: Colors.grey),
+                    ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: state.user.emailVerified ? Colors.green : Colors.orange,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      state.user.emailVerified ? 'Verified' : 'Not Verified',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ),
                 ],
                 const SizedBox(height: 32),
+                if (state is AuthAuthenticated && !state.user.emailVerified) ...[
+                  Card(
+                    child: ListTile(
+                      leading: const Icon(Icons.email, color: Colors.orange),
+                      title: const Text('Verify Email'),
+                      subtitle: const Text('Tap to send verification email'),
+                      trailing: const Icon(Icons.arrow_forward_ios),
+                      onTap: () {
+                        context.read<AuthCubit>().sendEmailVerification();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Verification email sent!'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                ],
                 const Card(
                   child: ListTile(
                     leading: Icon(Icons.edit),
@@ -102,8 +144,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             Card(
               child: ListTile(
-                leading: Icon(Icons.dark_mode),
-                title: Text('Dark Mode'),
+                leading: const Icon(Icons.dark_mode),
+                title: const Text('Dark Mode'),
                 trailing: Switch(
                   value: isDarkmode,
                   onChanged: (value) {

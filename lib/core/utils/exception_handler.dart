@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:udharoo/core/network/api_result.dart';
 
 class ExceptionHandler {
@@ -10,6 +11,8 @@ class ExceptionHandler {
   ) async {
     try {
       return await operation();
+    } on FirebaseAuthException catch (e) {
+      return _handleFirebaseAuthException<T>(e);
     } on DioException catch (e) {
       return _handleDioException<T>(e);
     } on SocketException {
@@ -67,6 +70,61 @@ class ExceptionHandler {
         'Unexpected error: ${e.toString()}',
         FailureType.unknown,
       );
+    }
+  }
+  
+  static ApiResult<T> _handleFirebaseAuthException<T>(FirebaseAuthException e) {
+    switch (e.code) {
+      case 'user-not-found':
+      case 'wrong-password':
+      case 'invalid-email':
+      case 'invalid-credential':
+        return ApiResult.failure(
+          e.message ?? 'Invalid credentials',
+          FailureType.auth,
+        );
+      
+      case 'email-already-in-use':
+        return ApiResult.failure(
+          e.message ?? 'Email already in use',
+          FailureType.validation,
+        );
+      
+      case 'weak-password':
+        return ApiResult.failure(
+          e.message ?? 'Password is too weak',
+          FailureType.validation,
+        );
+      
+      case 'operation-not-allowed':
+        return ApiResult.failure(
+          e.message ?? 'Operation not allowed',
+          FailureType.permission,
+        );
+      
+      case 'too-many-requests':
+        return ApiResult.failure(
+          e.message ?? 'Too many requests. Try again later.',
+          FailureType.server,
+        );
+      
+      case 'network-request-failed':
+        return ApiResult.failure(
+          e.message ?? 'Network error',
+          FailureType.network,
+        );
+      
+      case 'user-disabled':
+        return ApiResult.failure(
+          e.message ?? 'User account has been disabled',
+          FailureType.auth,
+        );
+      
+      default:
+        return ApiResult.failure(
+          e.message ?? 'Authentication error',
+          FailureType.auth,
+        );
     }
   }
   

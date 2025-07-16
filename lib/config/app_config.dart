@@ -1,3 +1,8 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:udharoo/firebase_options_dev.dart' as dev;
+import 'package:udharoo/firebase_options_staging.dart' as staging;
+import 'package:udharoo/firebase_options_prod.dart' as prod;
+
 enum AppFlavor { dev, staging, prod }
 
 class AppConfig {
@@ -9,42 +14,46 @@ class AppConfig {
     _flavor = flavor;
   }
 
-  static String get authBaseUrl {
+  static FirebaseOptions get firebaseOptions {
     switch (_flavor) {
       case AppFlavor.dev:
-        return 'https://ums-dev.edap.com.au/api/1';
+        return dev.DefaultFirebaseOptions.currentPlatform;
       case AppFlavor.staging:
-        return 'https://ums-dev.edap.com.au/api/1';
+        return staging.DefaultFirebaseOptions.currentPlatform;
       case AppFlavor.prod:
-        return 'https://ums.edap.com.au/api/1';
+        return prod.DefaultFirebaseOptions.currentPlatform;
     }
   }
 
-  static String get posBaseUrl {
+  static String get appName {
     switch (_flavor) {
       case AppFlavor.dev:
-        return 'https://pos-dev.edap.com.au/api/1';
+        return 'Udharoo Dev';
       case AppFlavor.staging:
-        return 'https://pos-dev.edap.com.au/api/1';
+        return 'Udharoo Staging';
       case AppFlavor.prod:
-        return 'https://theturfman.edap.com.au/api/1';
-    }
-  }
-  
-  static String get clientId {
-    switch (_flavor) {
-      case AppFlavor.dev:
-        return '3B7772BB-978C-4222-8CA0-3D3D0CC517DB';
-      case AppFlavor.staging:
-        return '3B7772BB-978C-4222-8CA0-3D3D0CC517DB';
-      case AppFlavor.prod:
-        return '3F0CBEFA-7E35-4208-8BED-BD895A540080';
+        return 'Udharoo';
     }
   }
 
-  static String get baseUrl => posBaseUrl;
+  static String get appSuffix {
+    switch (_flavor) {
+      case AppFlavor.dev:
+        return '.dev';
+      case AppFlavor.staging:
+        return '.staging';
+      case AppFlavor.prod:
+        return '';
+    }
+  }
 
-  static Duration get connectTimeout => const Duration(seconds: 30);
-  static Duration get receiveTimeout => const Duration(seconds: 30);
-  static Duration get sendTimeout => const Duration(seconds: 30);
+  static bool get isDebug {
+    switch (_flavor) {
+      case AppFlavor.dev:
+      case AppFlavor.staging:
+        return true;
+      case AppFlavor.prod:
+        return false;
+    }
+  }
 }

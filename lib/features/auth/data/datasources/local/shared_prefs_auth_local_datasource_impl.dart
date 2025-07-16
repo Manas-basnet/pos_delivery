@@ -1,56 +1,51 @@
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:udharoo/features/auth/domain/datasources/local/auth_local_datasource.dart';
-import 'package:shared_preferences/shared_preferences.dart' show SharedPreferences;
 
 class AuthLocalDatasourceImpl implements AuthLocalDatasource {
-  static const String _tokenKey = 'auth_token';
-  static const String _refreshTokenKey = 'refresh_token';
-  static const String _userIdKey = 'user_id';
-  static const String _usernameKey = 'username';
+  static const String _userDataKey = 'user_data';
   
   @override
-  Future<void> saveToken(String token) async {
+  Future<void> saveUserData({
+    required String uid,
+    String? email,
+    String? displayName,
+    String? phoneNumber,
+    String? photoURL,
+    bool? emailVerified,
+  }) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_tokenKey, token);
+    final userData = {
+      'uid': uid,
+      'email': email,
+      'displayName': displayName,
+      'phoneNumber': phoneNumber,
+      'photoURL': photoURL,
+      'emailVerified': emailVerified ?? false,
+    };
+    await prefs.setString(_userDataKey, jsonEncode(userData));
   }
   
   @override
-  Future<String?> getToken() async {
+  Future<Map<String, dynamic>?> getUserData() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_tokenKey);
+    final userDataString = prefs.getString(_userDataKey);
+    
+    if (userDataString != null) {
+      return jsonDecode(userDataString) as Map<String, dynamic>;
+    }
+    return null;
   }
 
   @override
-  Future<void> saveRefreshToken(String token) async {
+  Future<void> clearUserData() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_refreshTokenKey, token);
-  }
-
-  @override
-  Future<String?> getRefreshToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_refreshTokenKey);
-  }
-
-  @override
-  Future<void> clearTokens() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_tokenKey);
-    await prefs.remove(_refreshTokenKey);
+    await prefs.remove(_userDataKey);
   }
   
   @override
-  Future<void> saveUserData(String userId, String username) async {
+  Future<bool> hasUserData() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_userIdKey, userId);
-    await prefs.setString(_usernameKey, username);
-  }
-  
-  @override
-  Future<void> clearAuthData() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_tokenKey);
-    await prefs.remove(_refreshTokenKey);
-    await prefs.remove(_userIdKey);
-    await prefs.remove(_usernameKey);
+    return prefs.containsKey(_userDataKey);
   }
 }
