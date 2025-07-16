@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:pos_delivery_mobile/core/data/base_response.dart';
 import 'package:pos_delivery_mobile/core/network/api_result.dart';
 import 'package:pos_delivery_mobile/core/network/network_info.dart';
 import 'package:pos_delivery_mobile/core/utils/exception_handler.dart';
@@ -9,46 +8,7 @@ abstract class BaseRepository {
 
   final NetworkInfo networkInfo;
 
-  FailureType _getFailureTypeFromStatusCode(int statusCode) {
-    switch (statusCode) {
-      case 400:
-        return FailureType.validation;
-      case 401:
-      case 403:
-        return FailureType.auth;
-      case 404:
-        return FailureType.notFound;
-      case 500:
-      case 502:
-      case 503:
-      case 504:
-        return FailureType.server;
-      default:
-        return FailureType.unknown;
-    }
-  }
-
-  ApiResult<T> _validateResponse<T extends BaseResponseResult>(ApiResult<T> result) {
-    if (result is Success<T>) {
-      final data = result.data;
-      final statusCode = data.statusCode;
-      
-      if (statusCode == null) {
-        return ApiResult.failure('Missing status code', FailureType.validation);
-      }
-      
-      if (statusCode >= 400) {
-        final failureType = _getFailureTypeFromStatusCode(statusCode);
-        final message = data.message ?? 'Request failed with status code $statusCode';
-        
-        return ApiResult.failure(message, failureType);
-      }
-    }
-    
-    return result;
-  }
-
-  Future<ApiResult<T>> handleRemoteCallFirst<T extends BaseResponseResult>({
+  Future<ApiResult<T>> handleRemoteCallFirst<T>({
     required Future<ApiResult<T>> Function() remoteCall,
     Future<ApiResult<T>> Function()? localCall,
     required Future<void> Function(T? data) saveLocalData,
@@ -65,21 +25,20 @@ abstract class BaseRepository {
       }
 
       final remoteResult = await remoteCall();
-      final validatedResult = _validateResponse(remoteResult);
       
-      if (validatedResult is Success) {
+      if (remoteResult is Success) {
         try {
-          await saveLocalData(validatedResult.data);
+          await saveLocalData(remoteResult.data);
         } catch (e) {
           //silently ignore save erors kina bhane we already got the data we need
         }
       }
 
-      return validatedResult;
+      return remoteResult;
     });
   }
 
-  Future<ApiResult<T>> handleCacheCallFirst<T extends BaseResponseResult>({
+  Future<ApiResult<T>> handleCacheCallFirst<T>({
     required Future<ApiResult<T>> Function() localCall,
     Future<ApiResult<T>> Function()? remoteCall,
     required Future<void> Function(T? data) saveLocalData,
@@ -100,16 +59,15 @@ abstract class BaseRepository {
 
       if (remoteCall != null) {
         final remoteResult = await remoteCall();
-        final validatedResult = _validateResponse(remoteResult);
         
-        if (validatedResult is Success) {
+        if (remoteResult is Success) {
           try {
-            await saveLocalData(validatedResult.data);
+            await saveLocalData(remoteResult.data);
           } catch (e) {
             //silently ignore save erors kina bhane we already got the data we need
           }
         }
-        return validatedResult;
+        return remoteResult;
       }
 
       return ApiResult.failure(

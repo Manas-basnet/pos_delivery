@@ -1,5 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:pos_delivery_mobile/core/network/dio_client.dart';
+import 'package:pos_delivery_mobile/core/services/jwt_service.dart';
+import 'package:pos_delivery_mobile/core/services/device_info_service.dart';
 import 'package:pos_delivery_mobile/features/auth/data/datasources/local/shared_prefs_auth_local_datasource_impl.dart';
 import 'package:pos_delivery_mobile/features/auth/data/datasources/remote/auth_remote_datasource_impl.dart';
 import 'package:pos_delivery_mobile/features/auth/data/repositories/auth_repository_impl.dart';
@@ -33,6 +35,8 @@ Future<void> initAuth(GetIt sl) async {
   sl.registerLazySingleton<AuthRemoteDatasource>(
     () => AuthRemoteDatasourceImpl(
       dioClient: sl<DioClient>(instanceName: 'authDioClient'),
+      jwtService: sl<JwtService>(),
+      deviceInfoService: sl<DeviceInfoService>(),
     ),
   );
 

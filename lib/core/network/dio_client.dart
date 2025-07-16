@@ -1,18 +1,20 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:pos_delivery_mobile/config/app_config.dart';
 import 'package:pos_delivery_mobile/core/network/interceptors/auth_interceptor.dart';
+import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 class DioClient {
   late final Dio _dio;
-  
-  DioClient({AuthInterceptor? authInterceptor}) {
+
+  DioClient({AuthInterceptor? authInterceptor, String? baseUrl}) {
     _dio = Dio();
-    _configureDio(authInterceptor);
+    _configureDio(authInterceptor, baseUrl);
   }
-  
-  void _configureDio(AuthInterceptor? authInterceptor) {
+
+  void _configureDio(AuthInterceptor? authInterceptor, String? baseUrl) {
     _dio.options = BaseOptions(
-      baseUrl: AppConfig.baseUrl,
+      baseUrl: baseUrl ?? AppConfig.posBaseUrl,
       connectTimeout: AppConfig.connectTimeout,
       receiveTimeout: AppConfig.receiveTimeout,
       sendTimeout: AppConfig.sendTimeout,
@@ -21,21 +23,24 @@ class DioClient {
         'Accept': 'application/json',
       },
     );
-    
+
     if (authInterceptor != null) {
       _dio.interceptors.add(authInterceptor);
     }
-    
-    _dio.interceptors.add(LogInterceptor(
-      requestBody: true,
-      responseBody: true,
-      logPrint: (object) {
-        if (AppConfig.flavor != AppFlavor.prod) {
-          print(object);
-        }
-      },
-    ));
+
+    _dio.interceptors.add(
+      PrettyDioLogger(
+        requestHeader: true,
+        requestBody: true,
+        responseBody: true,
+        error: true,
+        enabled: AppConfig.flavor != AppFlavor.prod,
+        logPrint: (object) {
+          debugPrint(object.toString());
+        },
+      ),
+    );
   }
-  
+
   Dio get dio => _dio;
 }

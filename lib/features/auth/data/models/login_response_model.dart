@@ -15,14 +15,17 @@ class LoginResponseModel extends BaseResponseResult {
   });
   
   factory LoginResponseModel.fromJson(Map<String, dynamic> json) {
+    final result = json['Result'] as Map<String, dynamic>?;
+    final resultCommon = json['ResultCommon'] as Map<String, dynamic>?;
+    
     return LoginResponseModel(
-      token: json['token'] as String?,
-      refreshToken: json['refreshToken'] as String?,
-      message: json['message'] as String?,
-      statusCode: json['statusCode'] as int?,
-      errorCode: json['errorCode'] as int?,
-      id: json['id'] as String?,
-      extra: json['extra'],
+      token: resultCommon?['Token'] as String?,
+      refreshToken: resultCommon?['RefreshToken'] as String?,
+      message: result?['Message'] as String?,
+      statusCode: result?['StatusCode'] as int?,
+      errorCode: result?['ErrorCode'] as int?,
+      id: result?['Id'] as String?,
+      extra: result?['Extra'],
     );
   }
 }
